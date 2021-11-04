@@ -1,0 +1,6 @@
+This website and deployment was cookie cut from one of FoodyFood's cookiecutters.
+
+- Check out FoodyFood's GitHub: https://github.com/foodyfood
+
+https://{{cookiecutter.website_url}}
+

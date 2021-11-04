@@ -1,0 +1,45 @@
+name: { { cookiecutter.name } }
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - build/**
+jobs:
+  test:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: backend
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Test using docker-compose file
+        run: docker-compose --file build/docker-compose.yaml up test
+
+  build-and-push:
+    needs: test
+
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build image
+        run: docker build --file build/dockerfile --tag ghcr.io/{{cookiecutter.github_username}}/{{cookiecutter.name}}:latest ./build/
+
+      - name: Log into registry
+        run: echo "${{ "{{" }} secrets.GITHUB_TOKEN {{ "}}" }}" | docker login ghcr.io -u ${{ "{{" }} github.actor {{ "}}" }} --password-stdin
+
+      - name: Push image
+        run: docker push ghcr.io/{{cookiecutter.github_username}}/{{cookiecutter.name}}:latest

@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: {{ "{{" }} include "{{ cookiecutter.name }}.fullname" . {{ "}}" }}
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/tls-acme: "true"
+    acme.cert-manager.io/http01-edit-in-place: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - "{{ cookiecutter.website_url }}"
+      secretName: {{ cookiecutter.name }}-cert
+  rules:
+    - host: "{{ cookiecutter.website_url }}"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              serviceName: {{ cookiecutter.name }}
+              servicePort: http
